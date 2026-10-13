@@ -1,6 +1,15 @@
-export type CharacterType = 'steve' | 'alex' | 'zombie' | 'creeper';
+export type CharacterType = 'steve' | 'alex' | 'zombie' | 'creeper' | 'villager';
 
-export type HeldItemType = 'none' | 'diamond_sword' | 'iron_sword' | 'diamond_pickaxe' | 'bow' | 'torch' | 'tnt';
+export type HeldItemType = 
+  | 'none' 
+  | 'diamond_sword' 
+  | 'iron_sword' 
+  | 'diamond_pickaxe' 
+  | 'bow' 
+  | 'torch' 
+  | 'tnt'
+  | 'emerald'
+  | 'dirt_block';
 
 export type AnimationType = 
   | 'idle'
@@ -13,7 +22,13 @@ export type AnimationType =
   | 'fall'
   | 'victory'
   | 'creeper_walk'
-  | 'creeper_ignite';
+  | 'creeper_ignite'
+  | 'dig_frantic'
+  | 'parkour_leap'
+  | 'sad_defeat'
+  | 'villager_talk'
+  | 'villager_panic'
+  | 'shocked';
 
 export type CameraPreset = 
   | 'FollowActor'
@@ -32,25 +47,53 @@ export interface ActorState {
   type: CharacterType;
   customSkinUrl?: string;
   position: [number, number, number];
-  rotationY: number; // in radians or degrees
+  rotationY: number;
   animation: AnimationType;
   animSpeed?: number;
   heldItem: HeldItemType;
   isHurt?: boolean;
 }
 
+export type SoundEffectType = 
+  | 'footstep' 
+  | 'sword_slash' 
+  | 'hit' 
+  | 'creeper_hiss' 
+  | 'explosion' 
+  | 'ding'
+  | 'villager_hrm'
+  | 'villager_trade'
+  | 'laser_buzz'
+  | 'sad_piano'
+  | 'block_break'
+  | 'fail_buzzer';
+
 export interface SoundCue {
   id: string;
-  timeOffset: number; // relative to scene start, in seconds
-  type: 'footstep' | 'sword_slash' | 'hit' | 'creeper_hiss' | 'explosion' | 'ding';
+  timeOffset: number; // in seconds relative to scene start
+  type: SoundEffectType;
+}
+
+export interface ChallengeHudConfig {
+  bannerText?: string; // e.g. "⚠️ ห้ามโดนเส้นสีแดง! / DO NOT TOUCH RED LINE"
+  counter?: {
+    current: number;
+    max: number;
+    label: string; // e.g. "DIGS" or "ขุด"
+  };
+  tradePopup?: {
+    giveItem: string; // e.g. "64x Emeralds"
+    receiveItem: string; // e.g. "1x Dirt Block"
+  };
 }
 
 export interface StoryboardScene {
   id: string;
   title: string;
-  duration: number; // seconds (e.g. 2.5)
+  duration: number; // seconds
   cameraPreset: CameraPreset;
   cameraShake?: boolean;
+  hasRedLine?: boolean; // Renders the glowing dangerous Red Line
   targetActorId?: string;
   actors: ActorState[];
   caption?: {
@@ -58,6 +101,7 @@ export interface StoryboardScene {
     style: CaptionStyle;
     positionY?: 'top' | 'middle' | 'bottom';
   };
+  challengeHud?: ChallengeHudConfig;
   sounds: SoundCue[];
 }
 

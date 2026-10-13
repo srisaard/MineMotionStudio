@@ -175,6 +175,17 @@ export class MinecraftRig {
     hatMesh.position.y = 4 * P;
     head.add(hatMesh);
 
+    // Villager 3D Nose
+    if (this.type === 'villager') {
+      const noseGeo = new THREE.BoxGeometry(2 * P, 4 * P, 2 * P);
+      setBoxUVs(noseGeo, 24, 0, 2, 4, 2);
+      const noseMesh = new THREE.Mesh(noseGeo, this.material);
+      noseMesh.position.set(0, 2 * P, 5 * P);
+      noseMesh.castShadow = true;
+      head.add(noseMesh);
+    }
+
+
     // --- Right Arm Bone ---
     const rightArm = new THREE.Group();
     rightArm.position.set(-4 * P - armW / 2, 11 * P, 0); // Shoulder
@@ -264,7 +275,14 @@ export class MinecraftRig {
     if (this.type === 'zombie') {
       rightArm.rotation.x = -Math.PI / 2;
       leftArm.rotation.x = -Math.PI / 2;
+    } else if (this.type === 'villager') {
+      // Iconic folded arms
+      rightArm.rotation.x = -0.7;
+      rightArm.rotation.z = -0.35;
+      leftArm.rotation.x = -0.7;
+      leftArm.rotation.z = 0.35;
     }
+
 
     return {
       root,

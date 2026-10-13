@@ -140,7 +140,20 @@ export class ScriptParser {
         currentScene.sounds = currentScene.sounds || [];
 
         soundItems.forEach((item, idx) => {
-          if (['footstep', 'sword_slash', 'hit', 'creeper_hiss', 'explosion', 'ding'].includes(item)) {
+          if ([
+            'footstep',
+            'sword_slash',
+            'hit',
+            'creeper_hiss',
+            'explosion',
+            'ding',
+            'villager_hrm',
+            'villager_trade',
+            'laser_buzz',
+            'sad_piano',
+            'block_break',
+            'fail_buzzer',
+          ].includes(item)) {
             currentScene!.sounds!.push({
               id: `snd_${Date.now()}_${idx}`,
               timeOffset: 0.2 + idx * 0.4,
@@ -151,9 +164,14 @@ export class ScriptParser {
         continue;
       }
 
+      // Check Hazard line: Hazard: RedLine or Laser
+      if (line.toLowerCase().includes('red line') || line.toLowerCase().includes('laser')) {
+        currentScene.hasRedLine = true;
+      }
+
       // Natural language fallback: e.g. "Steve walks with diamond sword"
       const lower = line.toLowerCase();
-      if (lower.includes('steve') || lower.includes('alex') || lower.includes('zombie') || lower.includes('creeper')) {
+      if (lower.includes('steve') || lower.includes('alex') || lower.includes('zombie') || lower.includes('creeper') || lower.includes('villager')) {
         const actor = this.parseNaturalActor(line);
         if (actor) {
           currentScene.actors = currentScene.actors || [];
@@ -250,21 +268,30 @@ export class ScriptParser {
     if (lower.includes('alex')) type = 'alex';
     else if (lower.includes('zombie')) type = 'zombie';
     else if (lower.includes('creeper')) type = 'creeper';
+    else if (lower.includes('villager')) type = 'villager';
 
     let anim: AnimationType = 'idle';
     if (lower.includes('walk')) anim = type === 'creeper' ? 'creeper_walk' : 'walk';
     else if (lower.includes('run') || lower.includes('sprint')) anim = 'run';
     else if (lower.includes('slash') || lower.includes('sword') || lower.includes('attack')) anim = 'sword_slash';
+    else if (lower.includes('dig') || lower.includes('mine') || lower.includes('pickaxe')) anim = 'dig_frantic';
+    else if (lower.includes('parkour') || lower.includes('leap')) anim = 'parkour_leap';
+    else if (lower.includes('sad') || lower.includes('cost') || lower.includes('defeat') || lower.includes('grief')) anim = 'sad_defeat';
+    else if (lower.includes('talk') || lower.includes('hrmm') || lower.includes('trade')) anim = 'villager_talk';
+    else if (lower.includes('panic') || lower.includes('scream') || lower.includes('terror')) anim = 'villager_panic';
+    else if (lower.includes('shock') || lower.includes('disbelief')) anim = 'shocked';
     else if (lower.includes('jump')) anim = 'jump';
     else if (lower.includes('sneak')) anim = 'sneak';
     else if (lower.includes('hurt')) anim = 'hurt';
-    else if (lower.includes('victory') || lower.includes('celebrate')) anim = 'victory';
+    else if (lower.includes('victory') || lower.includes('celebrate') || lower.includes('win')) anim = 'victory';
     else if (lower.includes('ignite') || lower.includes('explode')) anim = 'creeper_ignite';
 
     let heldItem: HeldItemType = 'none';
     if (lower.includes('diamond_sword') || lower.includes('diamond sword')) heldItem = 'diamond_sword';
     else if (lower.includes('iron_sword') || lower.includes('iron sword')) heldItem = 'iron_sword';
     else if (lower.includes('pickaxe')) heldItem = 'diamond_pickaxe';
+    else if (lower.includes('emerald')) heldItem = 'emerald';
+    else if (lower.includes('dirt')) heldItem = 'dirt_block';
     else if (lower.includes('bow')) heldItem = 'bow';
     else if (lower.includes('torch')) heldItem = 'torch';
     else if (lower.includes('tnt')) heldItem = 'tnt';

@@ -210,6 +210,42 @@ export function generateCharacterSkinCanvas(type: CharacterType): HTMLCanvasElem
     fillRect(ctx, 10, 13, 4, 2, '#000000');
     fillRect(ctx, 9, 14, 2, 2, '#000000');
     fillRect(ctx, 13, 14, 2, 2, '#000000');
+
+  } else if (type === 'villager') {
+    // === VILLAGER SKIN ===
+    const skinTone = '#bd8960';
+    const robeBrown = '#543b27';
+    const darkCollar = '#392618';
+    const unibrowColor = '#3b2516';
+
+    // Head (0,0 to 32,16)
+    fillRect(ctx, 0, 0, 32, 16, skinTone);
+    // Unibrow on Front Face
+    fillRect(ctx, 9, 9, 6, 1, unibrowColor);
+    // Eyes: Green with whites
+    fillRect(ctx, 9, 10, 1, 1, '#ffffff');
+    fillRect(ctx, 10, 10, 1, 1, '#1b7d3a');
+    fillRect(ctx, 13, 10, 1, 1, '#ffffff');
+    fillRect(ctx, 14, 10, 1, 1, '#1b7d3a');
+    // Nose area & mouth
+    fillRect(ctx, 11, 13, 2, 1, '#9e6e49');
+
+    // Torso (Brown Robe)
+    fillRect(ctx, 16, 16, 24, 16, robeBrown);
+    fillRect(ctx, 22, 20, 4, 2, darkCollar);
+
+    // Folded arms (connected sleeve pattern)
+    fillRect(ctx, 40, 16, 16, 16, robeBrown);
+    fillRect(ctx, 32, 48, 16, 16, robeBrown);
+    // Hands in middle of folded arms
+    fillRect(ctx, 44, 26, 4, 4, skinTone);
+
+    // Legs / Robe skirt
+    fillRect(ctx, 0, 16, 16, 16, robeBrown);
+    fillRect(ctx, 16, 48, 16, 16, robeBrown);
+    // Boots
+    fillRect(ctx, 0, 30, 16, 2, '#312115');
+    fillRect(ctx, 16, 62, 16, 2, '#312115');
   }
 
   return canvas;

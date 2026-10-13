@@ -254,10 +254,61 @@ export class VoxelWorld {
     return { sun, moon, dirLight };
   }
 
+  // Red Line Danger Hazard (MTR "Do Not Touch Red Line" challenge)
+  private redLineGroup: THREE.Group | null = null;
+  private redLineLight: THREE.PointLight | null = null;
+  private redLineGlow: THREE.Mesh | null = null;
+
+  public setRedLineVisible(visible: boolean) {
+    if (visible && !this.redLineGroup) {
+      this.redLineGroup = new THREE.Group();
+      this.redLineGroup.name = 'red_line_hazard';
+
+      // Laser Core Beam (Bright Neon Red)
+      const coreGeo = new THREE.BoxGeometry(16, 0.08, 0.16);
+      const coreMat = new THREE.MeshBasicMaterial({ color: 0xff0033 });
+      const core = new THREE.Mesh(coreGeo, coreMat);
+      core.position.set(0, 0.05, 0);
+      this.redLineGroup.add(core);
+
+      // Outer Volumetric Red Laser Glow
+      const glowGeo = new THREE.BoxGeometry(16, 0.3, 0.5);
+      const glowMat = new THREE.MeshBasicMaterial({
+        color: 0xff1144,
+        transparent: true,
+        opacity: 0.5,
+      });
+      this.redLineGlow = new THREE.Mesh(glowGeo, glowMat);
+      this.redLineGlow.position.set(0, 0.15, 0);
+      this.redLineGroup.add(this.redLineGlow);
+
+      // Warning laser light
+      this.redLineLight = new THREE.PointLight(0xff0022, 3.5, 9);
+      this.redLineLight.position.set(0, 0.5, 0);
+      this.redLineGroup.add(this.redLineLight);
+
+      this.group.add(this.redLineGroup);
+    } else if (this.redLineGroup) {
+      this.redLineGroup.visible = visible;
+    }
+  }
+
   public update(time: number) {
     // Slowly drift clouds across sky
     for (let i = 0; i < this.clouds.length; i++) {
       this.clouds[i].position.x = (time * 0.3) % 40 - 20;
     }
+
+    // Pulse red laser line if active
+    if (this.redLineGroup && this.redLineGroup.visible) {
+      const pulse = (Math.sin(time * 12) + 1) * 0.5;
+      if (this.redLineLight) {
+        this.redLineLight.intensity = 2.5 + pulse * 2.0;
+      }
+      if (this.redLineGlow && this.redLineGlow.material instanceof THREE.MeshBasicMaterial) {
+        this.redLineGlow.material.opacity = 0.35 + pulse * 0.35;
+      }
+    }
   }
 }
+

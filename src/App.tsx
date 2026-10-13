@@ -11,7 +11,8 @@ import { STORY_TEMPLATES } from './storyboard/presets';
 export function App() {
   // Current active project
   const [project, setProject] = useState<StoryboardProject>(
-    STORY_TEMPLATES.creeper_jumpscare
+    STORY_TEMPLATES.at_what_cost
+
   );
 
   // Studio playback & navigation state

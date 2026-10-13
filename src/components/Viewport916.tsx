@@ -251,6 +251,7 @@ export const Viewport916: React.FC<Viewport916Props> = ({
       cameraDirector.update(localSceneTime, mainActorPos);
 
       // 5. Update World & Particles
+      world.setRedLineVisible(Boolean(activeScene.hasRedLine));
       world.update(time);
       particles.update(1 / 60);
 
@@ -326,6 +327,46 @@ export const Viewport916: React.FC<Viewport916Props> = ({
         }}
       >
         <canvas ref={canvasRef} className="w-full h-full block" />
+
+        {/* Challenge Hazard Banner (MTR "No Red Line" style) */}
+        {activeScene.challengeHud?.bannerText && (
+          <div className="absolute top-12 left-2 right-2 px-3 py-1.5 bg-rose-600/95 text-white font-black text-[11px] md:text-xs uppercase tracking-wider text-center rounded-lg border-2 border-rose-300 shadow-xl backdrop-blur-sm z-20 animate-pulse">
+            {activeScene.challengeHud.bannerText}
+          </div>
+        )}
+
+        {/* Challenge Counter Widget (MTR "1,000,000 Digs" style) */}
+        {activeScene.challengeHud?.counter && (
+          <div className="absolute top-14 left-1/2 -translate-x-1/2 bg-black/85 border-2 border-amber-400 px-4 py-1.5 rounded-xl shadow-2xl z-20 flex flex-col items-center min-w-[210px] pointer-events-none">
+            <div className="text-[10px] text-amber-300 font-extrabold tracking-widest uppercase">
+              {activeScene.challengeHud.counter.label}
+            </div>
+            <div className="text-lg md:text-xl font-black text-white font-mono tracking-tight drop-shadow">
+              {activeScene.challengeHud.counter.current.toLocaleString()} / {activeScene.challengeHud.counter.max.toLocaleString()}
+            </div>
+            <div className="w-full h-1.5 bg-neutral-800 rounded-full mt-1 overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-amber-400 to-emerald-400"
+                style={{
+                  width: `${Math.min(100, (activeScene.challengeHud.counter.current / activeScene.challengeHud.counter.max) * 100)}%`,
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Villager Trade Popup (JahCub style) */}
+        {activeScene.challengeHud?.tradePopup && (
+          <div className="absolute top-14 left-1/2 -translate-x-1/2 bg-[#c6c6c6] border-4 border-t-white border-l-white border-r-[#555] border-b-[#555] p-2.5 rounded shadow-2xl z-20 text-slate-900 font-mono text-xs flex items-center gap-2.5 pointer-events-none">
+            <div className="bg-[#8b8b8b] border-2 border-black/40 px-2.5 py-1.5 rounded font-bold text-center text-white">
+              {activeScene.challengeHud.tradePopup.giveItem}
+            </div>
+            <div className="text-lg font-black text-emerald-800">➡</div>
+            <div className="bg-[#8b8b8b] border-2 border-black/40 px-2.5 py-1.5 rounded font-bold text-center text-white">
+              {activeScene.challengeHud.tradePopup.receiveItem}
+            </div>
+          </div>
+        )}
 
         {/* Live Subtitle Overlay */}
         {activeScene.caption && activeScene.caption.text.trim() && (

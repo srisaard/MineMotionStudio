@@ -466,6 +466,7 @@ export class VideoExporter {
     cameraDirector.update(localTime, mainActorPos);
 
     // 4. Update World and Particles
+    world.setRedLineVisible(Boolean(activeScene.hasRedLine));
     world.update(currentTime);
     particles.update(1 / 60);
 
@@ -476,7 +477,12 @@ export class VideoExporter {
     finalCtx.clearRect(0, 0, width, height);
     finalCtx.drawImage(webglCanvas, 0, 0, width, height);
 
-    // 7. Render Styled Captions if enabled
+    // 7. Render Challenge HUDs (Banner, Counter, Trade)
+    if (activeScene.challengeHud) {
+      this.drawChallengeHud(finalCtx, activeScene.challengeHud, width, height);
+    }
+
+    // 8. Render Styled Captions if enabled
     if (includeCaptions && activeScene.caption && activeScene.caption.text.trim()) {
       overlayCtx.clearRect(0, 0, width, height);
       this.drawViralCaption(
@@ -491,6 +497,90 @@ export class VideoExporter {
       finalCtx.drawImage(overlayCanvas, 0, 0, width, height);
     }
   }
+
+  // Draw Challenge HUDs (Banners, Counters, Trades) onto the exported canvas
+  private static drawChallengeHud(
+    ctx: CanvasRenderingContext2D,
+    hud: any,
+    width: number,
+    height: number
+  ) {
+    ctx.save();
+
+    // 1. Hazard Banner
+    if (hud.bannerText) {
+      const bannerH = Math.round(height * 0.045);
+      const bannerW = Math.round(width * 0.88);
+      const bannerY = Math.round(height * 0.08);
+
+      ctx.fillStyle = '#dc2626';
+      ctx.beginPath();
+      ctx.roundRect((width - bannerW) / 2, bannerY, bannerW, bannerH, 12);
+      ctx.fill();
+
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = '#fca5a5';
+      ctx.stroke();
+
+      ctx.font = `900 ${Math.round(bannerH * 0.48)}px "Impact", "Arial Black", sans-serif`;
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(hud.bannerText, width / 2, bannerY + bannerH / 2);
+    }
+
+    // 2. Counter Widget
+    if (hud.counter) {
+      const cardW = Math.round(width * 0.65);
+      const cardH = Math.round(height * 0.065);
+      const cardY = Math.round(height * 0.14);
+
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+      ctx.beginPath();
+      ctx.roundRect((width - cardW) / 2, cardY, cardW, cardH, 16);
+      ctx.fill();
+
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#fbbf24';
+      ctx.stroke();
+
+      ctx.font = `800 ${Math.round(cardH * 0.22)}px sans-serif`;
+      ctx.fillStyle = '#fde68a';
+      ctx.textAlign = 'center';
+      ctx.fillText(hud.counter.label.toUpperCase(), width / 2, cardY + cardH * 0.28);
+
+      const countText = `${hud.counter.current.toLocaleString()} / ${hud.counter.max.toLocaleString()}`;
+      ctx.font = `900 ${Math.round(cardH * 0.4)}px monospace`;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(countText, width / 2, cardY + cardH * 0.68);
+    }
+
+    // 3. Trade Popup
+    if (hud.tradePopup) {
+      const cardW = Math.round(width * 0.72);
+      const cardH = Math.round(height * 0.065);
+      const cardY = Math.round(height * 0.14);
+
+      ctx.fillStyle = '#c6c6c6';
+      ctx.beginPath();
+      ctx.roundRect((width - cardW) / 2, cardY, cardW, cardH, 8);
+      ctx.fill();
+
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = '#555555';
+      ctx.stroke();
+
+      ctx.font = `bold ${Math.round(cardH * 0.32)}px monospace`;
+      ctx.fillStyle = '#111827';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const tradeText = `${hud.tradePopup.giveItem} ➡ ${hud.tradePopup.receiveItem}`;
+      ctx.fillText(tradeText, width / 2, cardY + cardH / 2);
+    }
+
+    ctx.restore();
+  }
+
 
   // Draw viral TikTok / Shorts stylized captions onto canvas
   public static drawViralCaption(

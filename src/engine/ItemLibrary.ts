@@ -167,6 +167,27 @@ export class ItemLibrary {
       group.add(tntMesh);
       group.add(band);
       group.position.set(0, 0.1, 0.3);
+
+    } else if (type === 'emerald') {
+      // Iconic Minecraft Emerald Gem
+      const gemGeo = new THREE.BoxGeometry(0.35, 0.45, 0.12);
+      const gemMat = new THREE.MeshStandardMaterial({
+        color: 0x17dd62,
+        roughness: 0.2,
+        metalness: 0.3,
+        emissive: 0x074d22,
+      });
+      const gem = new THREE.Mesh(gemGeo, gemMat);
+      gem.rotation.z = Math.PI / 4;
+      group.add(gem);
+      group.position.set(0, 0, 0.2);
+
+    } else if (type === 'dirt_block') {
+      const dirtGeo = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+      const dirtMat = new THREE.MeshStandardMaterial({ color: 0x7a5332, roughness: 0.95 });
+      const dirt = new THREE.Mesh(dirtGeo, dirtMat);
+      group.add(dirt);
+      group.position.set(0, 0.1, 0.25);
     }
 
     return group;

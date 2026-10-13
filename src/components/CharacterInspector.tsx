@@ -162,6 +162,7 @@ export const CharacterInspector: React.FC<CharacterInspectorProps> = ({
                 <option value="alex">Alex (Slim 3px arms)</option>
                 <option value="zombie">Zombie (Undead)</option>
                 <option value="creeper">Creeper (Voxel Mob)</option>
+                <option value="villager">Villager (Long Nose & Robe 🧙‍♂️)</option>
               </select>
             </div>
 
@@ -208,6 +209,12 @@ export const CharacterInspector: React.FC<CharacterInspectorProps> = ({
                     <option value="walk">Walk Cycle</option>
                     <option value="run">Sprint / Run</option>
                     <option value="sword_slash">Sword Slash & Combo</option>
+                    <option value="dig_frantic">⛏️ Frantic Mining (MTR Style)</option>
+                    <option value="parkour_leap">🚀 Parkour Leap (MTR Style)</option>
+                    <option value="sad_defeat">💔 Sad Defeat / At What Cost (Cash)</option>
+                    <option value="villager_talk">🧙‍♂️ Villager Hrmm Nod (JahCub)</option>
+                    <option value="villager_panic">😱 Villager Panic Run (JahCub)</option>
+                    <option value="shocked">🤯 Meme Shocked Reaction</option>
                     <option value="jump">Jump Parabolic</option>
                     <option value="sneak">Sneak / Crouch</option>
                     <option value="hurt">Damage / Knockback (Red Flash)</option>
@@ -233,6 +240,8 @@ export const CharacterInspector: React.FC<CharacterInspectorProps> = ({
                   <option value="diamond_sword">Diamond Sword ⚔️</option>
                   <option value="iron_sword">Iron Sword 🗡️</option>
                   <option value="diamond_pickaxe">Diamond Pickaxe ⛏️</option>
+                  <option value="emerald">Emerald Gem 🟢</option>
+                  <option value="dirt_block">Dirt Block 🟫</option>
                   <option value="bow">Bow 🏹</option>
                   <option value="torch">Torch (Glow Light) 🕯️</option>
                   <option value="tnt">TNT Block 🧨</option>
@@ -389,6 +398,12 @@ export const CharacterInspector: React.FC<CharacterInspectorProps> = ({
           >
             <option value="" disabled>+ Add SFX</option>
             <option value="sword_slash">⚔️ Sword Slash</option>
+            <option value="villager_hrm">🧙‍♂️ Villager Hrmm (JahCub)</option>
+            <option value="villager_trade">🎉 Villager Trade (JahCub)</option>
+            <option value="laser_buzz">⚡ Laser Warning Buzz (MTR)</option>
+            <option value="sad_piano">🎹 Sad Piano (Cash)</option>
+            <option value="block_break">⛏️ Block Crunch (MTR)</option>
+            <option value="fail_buzzer">🚨 Fail Buzzer</option>
             <option value="creeper_hiss">🐍 Creeper Hiss</option>
             <option value="explosion">💥 Explosion</option>
             <option value="hit">💢 Hit / Damage</option>
@@ -396,6 +411,19 @@ export const CharacterInspector: React.FC<CharacterInspectorProps> = ({
             <option value="ding">🔔 Experience Ding</option>
           </select>
         </div>
+
+        {/* Red Line Laser Hazard Toggle */}
+        <label className="flex items-center gap-2 cursor-pointer pt-1.5 border-t border-[#222a3a]">
+          <input
+            type="checkbox"
+            checked={Boolean(scene.hasRedLine)}
+            onChange={(e) => onUpdateScene({ ...scene, hasRedLine: e.target.checked })}
+            className="rounded bg-[#1b2131] border-[#2d374d] text-rose-500 focus:ring-0"
+          />
+          <span className="text-rose-300 font-bold text-[11px] flex items-center gap-1">
+            🔴 Red Line Laser Hazard (MTR)
+          </span>
+        </label>
 
         {scene.sounds.length === 0 ? (
           <p className="text-[11px] text-slate-500 italic">No sound cues in this scene.</p>

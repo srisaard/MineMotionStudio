@@ -200,6 +200,141 @@ export class AnimationLibrary {
         break;
       }
 
+      case 'dig_frantic': {
+        // High-speed pickaxe mining (MTR 1,000,000 digs style)
+        const digSpeed = 16.0;
+        const cycle = t * digSpeed;
+        const swing = Math.sin(cycle) * 1.1;
+
+        bones.torso.rotation.x = 0.35; // Leaning down into the block
+        bones.head.rotation.x = 0.5;   // Staring intently at the target block
+
+        if (bones.rightArm) {
+          bones.rightArm.rotation.x = -1.2 + swing;
+          bones.rightArm.rotation.y = -0.2;
+        }
+        if (bones.leftArm) {
+          bones.leftArm.rotation.x = 0.3;
+          bones.leftArm.rotation.z = -0.2;
+        }
+
+        // Slight leg brace
+        if (bones.rightLeg) bones.rightLeg.rotation.x = -0.3;
+        if (bones.leftLeg) bones.leftLeg.rotation.x = 0.3;
+        break;
+      }
+
+      case 'parkour_leap': {
+        // Huge horizontal parkour jump over red line / gap
+        const jumpCycle = (t % 1.6) / 1.6;
+        const jumpY = Math.sin(jumpCycle * Math.PI) * 1.1;
+        const forwardOffset = (jumpCycle - 0.5) * 2.5;
+
+        bones.root.position.y = jumpY;
+        bones.root.position.z = forwardOffset;
+
+        // Superman / hero leap pose
+        bones.torso.rotation.x = 0.5;
+        bones.head.rotation.x = -0.4;
+
+        if (bones.rightArm) {
+          bones.rightArm.rotation.x = -2.4; // reaching forward
+          bones.rightArm.rotation.z = -0.2;
+        }
+        if (bones.leftArm) {
+          bones.leftArm.rotation.x = 0.8; // trailing back
+          bones.leftArm.rotation.z = -0.3;
+        }
+
+        // Legs trailing in flight
+        if (bones.rightLeg) bones.rightLeg.rotation.x = 0.6;
+        if (bones.leftLeg) bones.leftLeg.rotation.x = 0.9;
+        break;
+      }
+
+      case 'sad_defeat': {
+        // "You won, but at what cost?" dramatic grief pose
+        const sadSway = Math.sin(t * 1.5) * 0.04;
+        bones.torso.rotation.x = 0.45 + sadSway;
+        bones.head.rotation.x = 0.6; // head hangs down
+        bones.head.rotation.z = 0.15; // tilted sad
+
+        if (bones.rightArm) {
+          bones.rightArm.rotation.x = 0.2;
+          bones.rightArm.rotation.z = 0.1;
+        }
+        if (bones.leftArm) {
+          bones.leftArm.rotation.x = 0.2;
+          bones.leftArm.rotation.z = -0.1;
+        }
+        break;
+      }
+
+      case 'villager_talk': {
+        // Quizzical nodding and "Hrmmm" head tilt
+        const nod = Math.sin(t * 5.0) * 0.18;
+        const tilt = Math.sin(t * 2.5) * 0.12;
+        bones.head.rotation.x = nod;
+        bones.head.rotation.y = tilt;
+
+        // Keep arms folded across chest
+        if (bones.rightArm) {
+          bones.rightArm.rotation.x = -0.7;
+          bones.rightArm.rotation.z = -0.35;
+        }
+        if (bones.leftArm) {
+          bones.leftArm.rotation.x = -0.7;
+          bones.leftArm.rotation.z = 0.35;
+        }
+        break;
+      }
+
+      case 'villager_panic': {
+        // Hilarious Villager running in terror ("Heeeaaah!")
+        const runCycle = t * 14.0;
+        const swing = Math.sin(runCycle) * 1.1;
+
+        bones.torso.rotation.x = 0.25;
+        // Head shaking wildly
+        bones.head.rotation.y = Math.sin(t * 15.0) * 0.3;
+        bones.head.rotation.z = Math.sin(t * 12.0) * 0.2;
+
+        // Arms thrown up in the air
+        if (bones.rightArm) {
+          bones.rightArm.rotation.x = -2.8;
+          bones.rightArm.rotation.z = Math.sin(runCycle) * 0.4;
+        }
+        if (bones.leftArm) {
+          bones.leftArm.rotation.x = -2.8;
+          bones.leftArm.rotation.z = -Math.sin(runCycle) * 0.4;
+        }
+
+        if (bones.rightLeg) bones.rightLeg.rotation.x = swing;
+        if (bones.leftLeg) bones.leftLeg.rotation.x = -swing;
+        break;
+      }
+
+      case 'shocked': {
+        // Meme shock reaction: step back, hands to head
+        bones.root.position.z = -0.3;
+        bones.torso.rotation.x = -0.2;
+        bones.head.rotation.x = -0.3; // looking up wide-eyed
+        bones.head.rotation.z = Math.sin(t * 20.0) * 0.05; // shuddering
+
+        // Hands to face / head
+        if (bones.rightArm) {
+          bones.rightArm.rotation.x = -2.2;
+          bones.rightArm.rotation.z = -0.6;
+          bones.rightArm.rotation.y = -0.4;
+        }
+        if (bones.leftArm) {
+          bones.leftArm.rotation.x = -2.2;
+          bones.leftArm.rotation.z = 0.6;
+          bones.leftArm.rotation.y = 0.4;
+        }
+        break;
+      }
+
       default:
         break;
     }

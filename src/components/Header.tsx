@@ -67,13 +67,15 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center gap-1.5">
           <span className="text-xs text-slate-400 hidden lg:inline">Templates:</span>
           <select
-            defaultValue="creeper_jumpscare"
+            defaultValue="at_what_cost"
             onChange={(e) => onSelectTemplate(e.target.value)}
             className="bg-[#1a1f2c] border border-[#2e374d] text-slate-200 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-emerald-500 hover:bg-[#202738] cursor-pointer"
           >
+            <option value="at_what_cost">💔 You Won, But at What Cost? (Cash)</option>
+            <option value="villagers_crazy">🧙‍♂️ Minecraft Villagers are CRAZY (JahCub)</option>
+            <option value="dig_million_times">⛏️ ขุด 1,000,000 ครั้ง (MTR Mysterios)</option>
+            <option value="no_red_line">🔴 ห้ามโดนเส้นสีแดง! (MTR Mysterios)</option>
             <option value="creeper_jumpscare">💥 Creeper Jump Scare (8s)</option>
-            <option value="diamond_rush">💎 Diamond Rush (7s)</option>
-            <option value="zombie_ambush">⚔️ Zombie Midnight Siege (8s)</option>
           </select>
         </div>
 

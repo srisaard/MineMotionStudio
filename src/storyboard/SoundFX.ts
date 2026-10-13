@@ -1,4 +1,7 @@
-export type SoundType = 'footstep' | 'sword_slash' | 'hit' | 'creeper_hiss' | 'explosion' | 'ding';
+import type { SoundEffectType } from './types';
+
+export type SoundType = SoundEffectType;
+
 
 export class SoundFX {
   private static ctx: AudioContext | null = null;
@@ -165,6 +168,163 @@ export class SoundFX {
           gain.connect(ctx.destination);
           osc.start(now);
           osc.stop(now + 0.35);
+          break;
+        }
+
+        case 'villager_hrm': {
+          // Iconic Minecraft Villager "Hrrrrmmm..."
+          const osc1 = ctx.createOscillator();
+          const osc2 = ctx.createOscillator();
+          osc1.type = 'sawtooth';
+          osc2.type = 'triangle';
+
+          // Starting pitch falling slightly
+          osc1.frequency.setValueAtTime(135, now);
+          osc1.frequency.exponentialRampToValueAtTime(105, now + 0.6);
+          osc2.frequency.setValueAtTime(200, now);
+          osc2.frequency.exponentialRampToValueAtTime(160, now + 0.6);
+
+          // Formant vocal filter (simulates nasal Minecraft nose cavity)
+          const filter = ctx.createBiquadFilter();
+          filter.type = 'bandpass';
+          filter.frequency.setValueAtTime(550, now);
+          filter.Q.setValueAtTime(3.5, now);
+
+          const gain = ctx.createGain();
+          gain.gain.setValueAtTime(0.01, now);
+          gain.gain.linearRampToValueAtTime(volume * 0.9, now + 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.65);
+
+          osc1.connect(filter);
+          osc2.connect(filter);
+          filter.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc1.start(now);
+          osc2.start(now);
+          osc1.stop(now + 0.65);
+          osc2.stop(now + 0.65);
+          break;
+        }
+
+        case 'villager_trade': {
+          // Cheerful Villager trade "Hurrr!"
+          const osc = ctx.createOscillator();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(160, now);
+          osc.frequency.exponentialRampToValueAtTime(260, now + 0.28);
+
+          const filter = ctx.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.setValueAtTime(1200, now);
+
+          const gain = ctx.createGain();
+          gain.gain.setValueAtTime(volume * 0.8, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.32);
+
+          osc.connect(filter);
+          filter.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.start(now);
+          osc.stop(now + 0.32);
+          break;
+        }
+
+        case 'laser_buzz': {
+          // High-voltage warning laser hum
+          const osc = ctx.createOscillator();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(180, now);
+
+          const filter = ctx.createBiquadFilter();
+          filter.type = 'bandpass';
+          filter.frequency.setValueAtTime(1800, now);
+          filter.Q.setValueAtTime(6.0, now);
+
+          const gain = ctx.createGain();
+          gain.gain.setValueAtTime(volume * 0.85, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+
+          osc.connect(filter);
+          filter.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.start(now);
+          osc.stop(now + 0.5);
+          break;
+        }
+
+        case 'sad_piano': {
+          // Melancholy piano chords ("You Won, But at What Cost?")
+          const freqs = [220.0, 261.63, 329.63]; // A minor triad (A3, C4, E4)
+          freqs.forEach((freq, idx) => {
+            const osc = ctx.createOscillator();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.04);
+
+            const gain = ctx.createGain();
+            gain.gain.setValueAtTime(volume * 0.45, now + idx * 0.04);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 2.2);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start(now + idx * 0.04);
+            osc.stop(now + 2.3);
+          });
+          break;
+        }
+
+        case 'block_break': {
+          // Rapid stone/ore crunching sound
+          const bufferSize = ctx.sampleRate * 0.12;
+          const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let i = 0; i < bufferSize; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.04));
+          }
+
+          const noise = ctx.createBufferSource();
+          noise.buffer = buffer;
+
+          const filter = ctx.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.setValueAtTime(900, now);
+          filter.frequency.exponentialRampToValueAtTime(150, now + 0.12);
+
+          const gain = ctx.createGain();
+          gain.gain.setValueAtTime(volume * 0.9, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+
+          noise.connect(filter);
+          filter.connect(gain);
+          gain.connect(ctx.destination);
+          noise.start(now);
+          break;
+        }
+
+        case 'fail_buzzer': {
+          // Dissonant game-over buzzer
+          const osc1 = ctx.createOscillator();
+          const osc2 = ctx.createOscillator();
+          osc1.type = 'sawtooth';
+          osc2.type = 'sawtooth';
+          osc1.frequency.setValueAtTime(92, now);
+          osc2.frequency.setValueAtTime(98, now); // 6Hz dissonant beating
+
+          const gain = ctx.createGain();
+          gain.gain.setValueAtTime(volume * 0.9, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
+
+          osc1.connect(gain);
+          osc2.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc1.start(now);
+          osc2.start(now);
+          osc1.stop(now + 0.45);
+          osc2.stop(now + 0.45);
           break;
         }
       }
