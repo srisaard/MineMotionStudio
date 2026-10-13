@@ -9,8 +9,10 @@ import {
   Smartphone,
   Eye,
   Camera,
+  Subtitles,
+  Crosshair,
 } from 'lucide-react';
-import type { StoryboardProject, StoryboardScene, CameraPreset } from '../storyboard/types';
+import type { StoryboardProject, StoryboardScene, CameraPreset, HeldItemType } from '../storyboard/types';
 
 import { MinecraftRig } from '../engine/MinecraftRig';
 import { AnimationLibrary } from '../engine/AnimationLibrary';
@@ -18,6 +20,7 @@ import { VoxelWorld } from '../engine/VoxelWorld';
 import { CameraDirector } from '../engine/CameraDirector';
 import { ParticleSystem } from '../engine/ParticleSystem';
 import { SoundFX } from '../storyboard/SoundFX';
+import { MinecraftGameHud } from './MinecraftGameHud';
 
 interface Viewport916Props {
   project: StoryboardProject;
@@ -45,6 +48,8 @@ export const Viewport916: React.FC<Viewport916Props> = ({
 
   const [showSafeZones, setShowSafeZones] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [captionsEnabled, setCaptionsEnabled] = useState(project.globalCaptionsEnabled !== false);
+  const [gameHudEnabled, setGameHudEnabled] = useState(project.gameHudEnabled !== false);
 
   // Three.js internal references
   const threeRef = useRef<{
@@ -226,19 +231,29 @@ export const Viewport916: React.FC<Viewport916Props> = ({
       });
 
       let mainActorPos = new THREE.Vector3(0, 0, 0);
+      let mainActorRotY = 0;
 
       activeScene.actors.forEach((actor) => {
         const rig = rigs.get(actor.id);
         if (rig) {
-          rig.group.visible = true;
+          const isTarget = actor.id === activeScene.targetActorId || (!activeScene.targetActorId && actor.id === activeScene.actors[0]?.id);
+
+          // In FirstPersonPOV, hide player's 3rd-person mesh to prevent camera clipping inside player head
+          if (activeScene.cameraPreset === 'FirstPersonPOV' && isTarget) {
+            rig.group.visible = false;
+          } else {
+            rig.group.visible = true;
+          }
+
           rig.group.position.set(actor.position[0], actor.position[1], actor.position[2]);
           rig.group.rotation.y = actor.rotationY;
           rig.equipItem(actor.heldItem);
 
           AnimationLibrary.applyAnimation(rig, actor.animation, localSceneTime, actor.animSpeed || 1.0);
 
-          if (actor.id === activeScene.targetActorId || !mainActorPos) {
+          if (isTarget || !mainActorPos) {
             mainActorPos = rig.group.position.clone();
+            mainActorRotY = actor.rotationY;
           }
         }
       });
@@ -248,7 +263,7 @@ export const Viewport916: React.FC<Viewport916Props> = ({
       if (activeScene.cameraShake && localSceneTime < 0.4) {
         cameraDirector.triggerShake(0.25);
       }
-      cameraDirector.update(localSceneTime, mainActorPos);
+      cameraDirector.update(localSceneTime, mainActorPos, mainActorRotY);
 
       // 5. Update World & Particles
       world.setRedLineVisible(Boolean(activeScene.hasRedLine));
@@ -288,6 +303,34 @@ export const Viewport916: React.FC<Viewport916Props> = ({
         </div>
 
         <div className="flex items-center gap-1.5">
+          {/* Captions Subtitles Toggle */}
+          <button
+            onClick={() => setCaptionsEnabled(!captionsEnabled)}
+            title={captionsEnabled ? 'Disable Captions (Subtitles)' : 'Enable Captions (Subtitles)'}
+            className={`px-2 py-1 rounded-lg border text-[11px] font-bold flex items-center gap-1 transition-colors ${
+              captionsEnabled
+                ? 'bg-amber-500/20 border-amber-500/40 text-amber-300'
+                : 'bg-[#1b2131] border-[#2e374d] text-slate-500 hover:text-slate-300'
+            }`}
+          >
+            <Subtitles className="w-3.5 h-3.5" />
+            <span>{captionsEnabled ? 'CC ON' : 'CC OFF'}</span>
+          </button>
+
+          {/* Minecraft HUD Toggle */}
+          <button
+            onClick={() => setGameHudEnabled(!gameHudEnabled)}
+            title={gameHudEnabled ? 'Hide Minecraft Game HUD (Crosshair, Hearts, Hotbar)' : 'Show Minecraft Game HUD'}
+            className={`px-2 py-1 rounded-lg border text-[11px] font-bold flex items-center gap-1 transition-colors ${
+              gameHudEnabled
+                ? 'bg-cyan-500/20 border-cyan-500/40 text-cyan-300'
+                : 'bg-[#1b2131] border-[#2e374d] text-slate-500 hover:text-slate-300'
+            }`}
+          >
+            <Crosshair className="w-3.5 h-3.5" />
+            <span>HUD</span>
+          </button>
+
           {/* Safe Zones Toggle */}
           <button
             onClick={() => setShowSafeZones(!showSafeZones)}
@@ -327,6 +370,18 @@ export const Viewport916: React.FC<Viewport916Props> = ({
         }}
       >
         <canvas ref={canvasRef} className="w-full h-full block" />
+
+        {/* Real Minecraft Game HUD (Crosshair, 1st Person Arm Viewmodel, Hearts, Food, XP Bar, Hotbar) */}
+        <MinecraftGameHud
+          visible={gameHudEnabled}
+          isFirstPerson={activeScene.cameraPreset === 'FirstPersonPOV'}
+          heldItem={activeScene.actors[0]?.heldItem || 'none'}
+          isSwinging={
+            (currentTime % 0.35 < 0.18) &&
+            (activeScene.actors[0]?.animation === 'dig_frantic' ||
+              activeScene.actors[0]?.animation === 'sword_slash')
+          }
+        />
 
         {/* Challenge Hazard Banner (MTR "No Red Line" style) */}
         {activeScene.challengeHud?.bannerText && (
@@ -369,7 +424,7 @@ export const Viewport916: React.FC<Viewport916Props> = ({
         )}
 
         {/* Live Subtitle Overlay */}
-        {activeScene.caption && activeScene.caption.text.trim() && (
+        {captionsEnabled && activeScene.caption?.enabled !== false && activeScene.caption && activeScene.caption.text.trim() && (
           <div
             className={`absolute left-0 right-0 px-4 text-center pointer-events-none transition-all duration-200 z-10 ${
               activeScene.caption.positionY === 'top'
@@ -496,12 +551,17 @@ export const Viewport916: React.FC<Viewport916Props> = ({
               onChange={(e) => onCameraPresetChange && onCameraPresetChange(e.target.value as CameraPreset)}
               className="bg-[#1b2131] border border-[#2c374d] text-slate-200 text-[11px] rounded px-2 py-1 focus:outline-none focus:border-emerald-500 cursor-pointer"
             >
-              <option value="FollowActor">Follow Hero</option>
-              <option value="LowAngleHero">Hero Low Angle</option>
-              <option value="CloseUpFace">Face Close-up</option>
-              <option value="Orbit">360° Orbit</option>
-              <option value="WideReveal">Wide Reveal</option>
-              <option value="TopDownIsometric">Isometric</option>
+              <option value="FirstPersonPOV">👀 1st Person POV (Minecraft)</option>
+              <option value="ThirdPersonBack">🎮 F5 3rd Person Back</option>
+              <option value="ThirdPersonFront">🤳 F5 Selfie / Reaction (Cash)</option>
+              <option value="SideTracking">🏃 Side Tracking Leap/Chase (MTR)</option>
+              <option value="OverTheShoulder">🗣️ Over The Shoulder (Trade)</option>
+              <option value="FollowActor">🎥 Follow Hero Smooth</option>
+              <option value="LowAngleHero">⚡ Hero Low Angle</option>
+              <option value="CloseUpFace">😱 Close-up Face</option>
+              <option value="Orbit">🔄 360° Drone Orbit</option>
+              <option value="WideReveal">🌄 Wide World Reveal</option>
+              <option value="TopDownIsometric">🗺️ Top-down Isometric</option>
             </select>
           </div>
         </div>

@@ -217,7 +217,8 @@ export class VideoExporter {
         finalCanvas,
         finalCtx,
         canvas,
-        settings.includeCaptions
+        settings.includeCaptions,
+        settings.includeGameHud !== false
       );
 
       const timestampMicros = Math.round((frame / fps) * 1_000_000);
@@ -305,7 +306,8 @@ export class VideoExporter {
         finalCanvas,
         finalCtx,
         canvas,
-        settings.includeCaptions
+        settings.includeCaptions,
+        settings.includeGameHud !== false
       );
 
       const timestampMicros = Math.round((frame / fps) * 1_000_000);
@@ -386,7 +388,8 @@ export class VideoExporter {
           finalCanvas,
           finalCtx,
           canvas,
-          settings.includeCaptions
+          settings.includeCaptions,
+          settings.includeGameHud !== false
         );
 
         onProgress(Math.round(((frame + 1) / totalFrames) * 100), frame + 1, totalFrames);
@@ -413,7 +416,8 @@ export class VideoExporter {
     finalCanvas: HTMLCanvasElement,
     finalCtx: CanvasRenderingContext2D,
     webglCanvas: HTMLCanvasElement,
-    includeCaptions: boolean
+    includeCaptions: boolean,
+    includeGameHud = true
   ) {
     // 1. Find active scene and local scene time
     let accumulated = 0;
@@ -440,11 +444,22 @@ export class VideoExporter {
     });
 
     let mainActorPos = new THREE.Vector3(0, 0, 0);
+    let mainActorRotY = 0;
+    let mainActorHeldItem = 'none';
+    let mainActorAnim = 'idle';
 
     for (const actor of activeScene.actors) {
       const rig = rigs.get(actor.id);
       if (rig) {
-        rig.group.visible = true;
+        const isTarget = actor.id === activeScene.targetActorId || (!activeScene.targetActorId && actor.id === activeScene.actors[0]?.id);
+
+        // Hide actor mesh in FirstPersonPOV to prevent camera clipping inside player head
+        if (activeScene.cameraPreset === 'FirstPersonPOV' && isTarget) {
+          rig.group.visible = false;
+        } else {
+          rig.group.visible = true;
+        }
+
         rig.group.position.set(actor.position[0], actor.position[1], actor.position[2]);
         rig.group.rotation.y = actor.rotationY;
         rig.equipItem(actor.heldItem);
@@ -452,8 +467,11 @@ export class VideoExporter {
         // Apply pose
         AnimationLibrary.applyAnimation(rig, actor.animation, localTime, actor.animSpeed || 1.0);
 
-        if (actor.id === activeScene.targetActorId || !mainActorPos) {
+        if (isTarget || !mainActorPos) {
           mainActorPos = rig.group.position.clone();
+          mainActorRotY = actor.rotationY;
+          mainActorHeldItem = actor.heldItem;
+          mainActorAnim = actor.animation;
         }
       }
     }
@@ -463,7 +481,7 @@ export class VideoExporter {
     if (activeScene.cameraShake) {
       cameraDirector.triggerShake(0.3);
     }
-    cameraDirector.update(localTime, mainActorPos);
+    cameraDirector.update(localTime, mainActorPos, mainActorRotY);
 
     // 4. Update World and Particles
     world.setRedLineVisible(Boolean(activeScene.hasRedLine));
@@ -482,8 +500,21 @@ export class VideoExporter {
       this.drawChallengeHud(finalCtx, activeScene.challengeHud, width, height);
     }
 
-    // 8. Render Styled Captions if enabled
-    if (includeCaptions && activeScene.caption && activeScene.caption.text.trim()) {
+    // 8. Render Minecraft Game HUD (Crosshair, 1st Person Arm, Hearts, Food, XP Bar, Hotbar)
+    if (includeGameHud) {
+      const isSwinging = (localTime % 0.35 < 0.18) && (mainActorAnim === 'dig_frantic' || mainActorAnim === 'sword_slash');
+      this.drawMinecraftGameHud(
+        finalCtx,
+        width,
+        height,
+        activeScene.cameraPreset === 'FirstPersonPOV',
+        mainActorHeldItem,
+        isSwinging
+      );
+    }
+
+    // 9. Render Styled Captions if enabled
+    if (includeCaptions && activeScene.caption?.enabled !== false && activeScene.caption && activeScene.caption.text.trim()) {
       overlayCtx.clearRect(0, 0, width, height);
       this.drawViralCaption(
         overlayCtx,
@@ -581,6 +612,152 @@ export class VideoExporter {
     ctx.restore();
   }
 
+  // Draw authentic Minecraft Game HUD (Crosshair, hearts, hunger, xp, hotbar, viewmodel arm)
+  private static drawMinecraftGameHud(
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    isFirstPerson: boolean,
+    heldItem: string,
+    isSwinging = false
+  ) {
+    ctx.save();
+
+    // 1. Center Crosshair (Classic Minecraft '+')
+    const cx = Math.round(width / 2);
+    const cy = Math.round(height / 2);
+    const crossSize = Math.max(8, Math.round(width * 0.016));
+    const crossThickness = Math.max(2, Math.round(width * 0.0035));
+
+    ctx.fillStyle = '#ffffff';
+    ctx.shadowColor = '#000000';
+    ctx.shadowBlur = 2;
+    ctx.fillRect(cx - crossSize, cy - Math.floor(crossThickness / 2), crossSize * 2, crossThickness);
+    ctx.fillRect(cx - Math.floor(crossThickness / 2), cy - crossSize, crossThickness, crossSize * 2);
+    ctx.shadowBlur = 0;
+
+    // 2. First-Person Hand & Held Item in bottom-right corner if in 1st person
+    if (isFirstPerson) {
+      const armW = Math.round(width * 0.22);
+      const armH = Math.round(height * 0.24);
+      const armX = Math.round(width * 0.82);
+      const armY = Math.round(height * 0.82);
+
+      ctx.save();
+      ctx.translate(armX, armY);
+      ctx.rotate(isSwinging ? -0.45 : -0.1);
+
+      // Arm sleeve & skin
+      ctx.fillStyle = '#00a3a9'; // Steve cyan sleeve
+      ctx.fillRect(-armW / 2, -armH / 2, armW, armH * 0.35);
+      ctx.fillStyle = '#c68c53'; // Steve skin
+      ctx.fillRect(-armW / 2, -armH / 2 + armH * 0.35, armW, armH * 0.65);
+      ctx.strokeStyle = '#865933';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(-armW / 2, -armH / 2, armW, armH);
+
+      // Held item icon
+      if (heldItem && heldItem !== 'none') {
+        const itemIcons: Record<string, string> = {
+          diamond_sword: '⚔️',
+          diamond_pickaxe: '⛏️',
+          emerald: '🟢',
+          torch: '🕯️',
+          dirt_block: '🟫',
+          bow: '🏹',
+          tnt: '🧨',
+          iron_sword: '🗡️',
+        };
+        const icon = itemIcons[heldItem] || '🗡️';
+        ctx.font = `${Math.round(armW * 0.5)}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(icon, -armW * 0.3, -armH * 0.4);
+      }
+      ctx.restore();
+    }
+
+    // 3. Bottom Hotbar, Hearts, Food, XP Bar
+    const hudW = Math.round(width * 0.82);
+    const hudX = Math.round((width - hudW) / 2);
+    const slotSize = Math.round(hudW / 9);
+    const hotbarY = Math.round(height * 0.935);
+    const xpY = hotbarY - Math.round(height * 0.016);
+    const statsY = xpY - Math.round(height * 0.022);
+
+    // Hearts (Left) & Food (Right)
+    const heartSize = Math.max(10, Math.round(width * 0.026));
+    ctx.font = `${heartSize}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    // 10 Red Hearts
+    for (let i = 0; i < 10; i++) {
+      ctx.fillText('❤️', hudX + i * (heartSize * 0.95), statsY);
+    }
+    // 10 Food Drumsticks
+    for (let i = 0; i < 10; i++) {
+      ctx.fillText('🍗', hudX + hudW - (9 - i) * (heartSize * 0.95), statsY);
+    }
+
+    // Level number (Green "100")
+    ctx.font = `900 ${Math.round(height * 0.018)}px monospace`;
+    ctx.fillStyle = '#55ff55';
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 3;
+    ctx.strokeText('100', width / 2, xpY - Math.round(height * 0.009));
+    ctx.fillText('100', width / 2, xpY - Math.round(height * 0.009));
+
+    // Green XP Bar
+    ctx.fillStyle = '#1a2e1a';
+    ctx.fillRect(hudX, xpY, hudW, Math.round(height * 0.007));
+    ctx.fillStyle = '#55ff55';
+    ctx.fillRect(hudX, xpY, hudW, Math.round(height * 0.007));
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(hudX, xpY, hudW, Math.round(height * 0.007));
+
+    // Hotbar container background
+    ctx.fillStyle = '#8f8f8f';
+    ctx.fillRect(hudX, hotbarY, hudW, slotSize);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#373737';
+    ctx.strokeRect(hudX, hotbarY, hudW, slotSize);
+
+    // 9 Slots
+    for (let i = 0; i < 9; i++) {
+      const sx = hudX + i * slotSize;
+      ctx.fillStyle = '#8b8b8b';
+      ctx.fillRect(sx + 1, hotbarY + 1, slotSize - 2, slotSize - 2);
+
+      // Slot border
+      ctx.strokeStyle = i === 0 ? '#ffffff' : '#373737';
+      ctx.lineWidth = i === 0 ? 3 : 1;
+      ctx.strokeRect(sx, hotbarY, slotSize, slotSize);
+
+      // Items in slots
+      const slotIcons = ['⚔️', '⛏️', '🍎', '🕯️', '🍞', '🔮', '🟫', '🟢', '🪣'];
+      if (i === 0 && heldItem && heldItem !== 'none') {
+        const itemIcons: Record<string, string> = {
+          diamond_sword: '⚔️',
+          diamond_pickaxe: '⛏️',
+          emerald: '🟢',
+          torch: '🕯️',
+          dirt_block: '🟫',
+          bow: '🏹',
+          tnt: '🧨',
+          iron_sword: '🗡️',
+        };
+        ctx.font = `${Math.round(slotSize * 0.55)}px sans-serif`;
+        ctx.fillText(itemIcons[heldItem] || '⚔️', sx + slotSize / 2, hotbarY + slotSize / 2);
+      } else {
+        ctx.font = `${Math.round(slotSize * 0.5)}px sans-serif`;
+        ctx.fillText(slotIcons[i], sx + slotSize / 2, hotbarY + slotSize / 2);
+      }
+    }
+
+    ctx.restore();
+  }
 
   // Draw viral TikTok / Shorts stylized captions onto canvas
   public static drawViralCaption(

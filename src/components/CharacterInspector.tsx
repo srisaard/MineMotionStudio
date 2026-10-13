@@ -8,6 +8,7 @@ import {
   MessageSquare,
   Volume2,
   Plus,
+  Camera,
 } from 'lucide-react';
 import type {
   StoryboardScene,
@@ -15,6 +16,7 @@ import type {
   CharacterType,
   HeldItemType,
   AnimationType,
+  CameraPreset,
   CaptionStyle,
   SoundCue,
 } from '../storyboard/types';
@@ -303,14 +305,37 @@ export const CharacterInspector: React.FC<CharacterInspectorProps> = ({
         )}
       </div>
 
-      {/* 2. Captions & Shorts Overlay Section */}
+      {/* 2. Captions & Shorts Subtitle Section */}
       <div className="bg-[#151a26] rounded-xl p-3 border border-[#222a3a] space-y-2.5">
-        <span className="font-bold text-slate-200 flex items-center gap-1.5">
-          <MessageSquare className="w-3.5 h-3.5 text-amber-400" />
-          Shorts / Reels Subtitle
-        </span>
+        <div className="flex items-center justify-between">
+          <span className="font-bold text-slate-200 flex items-center gap-1.5">
+            <MessageSquare className="w-3.5 h-3.5 text-amber-400" />
+            Shorts Subtitles
+          </span>
+          <label className="flex items-center gap-1.5 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={scene.caption?.enabled !== false}
+              onChange={(e) =>
+                onUpdateScene({
+                  ...scene,
+                  caption: {
+                    text: scene.caption?.text || '',
+                    style: scene.caption?.style || 'viral_yellow',
+                    positionY: scene.caption?.positionY || 'bottom',
+                    enabled: e.target.checked,
+                  },
+                })
+              }
+              className="rounded bg-[#1b2131] border-[#2d374d] text-amber-500 focus:ring-0"
+            />
+            <span className="text-[10px] text-slate-300 font-semibold">
+              {scene.caption?.enabled !== false ? 'Enabled' : 'Disabled'}
+            </span>
+          </label>
+        </div>
 
-        <div>
+        <div className={scene.caption?.enabled === false ? 'opacity-40 pointer-events-none' : ''}>
           <input
             type="text"
             value={scene.caption?.text || ''}
@@ -321,59 +346,105 @@ export const CharacterInspector: React.FC<CharacterInspectorProps> = ({
                   text: e.target.value,
                   style: scene.caption?.style || 'viral_yellow',
                   positionY: scene.caption?.positionY || 'bottom',
+                  enabled: scene.caption?.enabled !== false,
                 },
               })
             }
             placeholder="Type viral caption..."
             className="w-full bg-[#1b2131] border border-[#2d374d] text-slate-200 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-emerald-500"
           />
+
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            <div>
+              <label className="text-[10px] text-slate-400 block mb-0.5">Style</label>
+              <select
+                value={scene.caption?.style || 'viral_yellow'}
+                onChange={(e) =>
+                  onUpdateScene({
+                    ...scene,
+                    caption: {
+                      text: scene.caption?.text || '',
+                      style: e.target.value as CaptionStyle,
+                      positionY: scene.caption?.positionY || 'bottom',
+                      enabled: scene.caption?.enabled !== false,
+                    },
+                  })
+                }
+                className="w-full bg-[#1b2131] border border-[#2d374d] text-slate-200 text-[11px] rounded px-2 py-1 focus:outline-none focus:border-emerald-500"
+              >
+                <option value="viral_yellow">Viral Yellow</option>
+                <option value="minecraft_pixel">Minecraft Pixel</option>
+                <option value="neon_punch">Neon Punch</option>
+                <option value="clean_white">Clean Pill</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="text-[10px] text-slate-400 block mb-0.5">Placement</label>
+              <select
+                value={scene.caption?.positionY || 'bottom'}
+                onChange={(e) =>
+                  onUpdateScene({
+                    ...scene,
+                    caption: {
+                      text: scene.caption?.text || '',
+                      style: scene.caption?.style || 'viral_yellow',
+                      positionY: e.target.value as any,
+                      enabled: scene.caption?.enabled !== false,
+                    },
+                  })
+                }
+                className="w-full bg-[#1b2131] border border-[#2d374d] text-slate-200 text-[11px] rounded px-2 py-1 focus:outline-none focus:border-emerald-500"
+              >
+                <option value="bottom">Bottom Safe Zone</option>
+                <option value="middle">Center Attention</option>
+                <option value="top">Top Header</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Camera Angle & Director Section */}
+      <div className="bg-[#151a26] rounded-xl p-3 border border-[#222a3a] space-y-2.5">
+        <div className="flex items-center justify-between">
+          <span className="font-bold text-slate-200 flex items-center gap-1.5">
+            <Camera className="w-3.5 h-3.5 text-cyan-400" />
+            Camera Angle Director
+          </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <label className="text-[10px] text-slate-400 block mb-0.5">Style</label>
-            <select
-              value={scene.caption?.style || 'viral_yellow'}
-              onChange={(e) =>
-                onUpdateScene({
-                  ...scene,
-                  caption: {
-                    text: scene.caption?.text || '',
-                    style: e.target.value as CaptionStyle,
-                    positionY: scene.caption?.positionY || 'bottom',
-                  },
-                })
-              }
-              className="w-full bg-[#1b2131] border border-[#2d374d] text-slate-200 text-[11px] rounded px-2 py-1 focus:outline-none focus:border-emerald-500"
-            >
-              <option value="viral_yellow">Viral Yellow</option>
-              <option value="minecraft_pixel">Minecraft Pixel</option>
-              <option value="neon_punch">Neon Punch</option>
-              <option value="clean_white">Clean Pill</option>
-            </select>
-          </div>
+        <div>
+          <label className="text-[10px] text-slate-400 block mb-0.5">Camera Angle Preset</label>
+          <select
+            value={scene.cameraPreset}
+            onChange={(e) => onUpdateScene({ ...scene, cameraPreset: e.target.value as CameraPreset })}
+            className="w-full bg-[#1b2131] border border-[#2d374d] text-slate-200 text-[11px] rounded px-2 py-1.5 focus:outline-none focus:border-cyan-500"
+          >
+            <option value="FirstPersonPOV">👀 1st Person POV (Minecraft)</option>
+            <option value="ThirdPersonBack">🎮 F5 3rd Person Back</option>
+            <option value="ThirdPersonFront">🤳 F5 Selfie / Reaction (Cash)</option>
+            <option value="SideTracking">🏃 Side Tracking Leap/Chase (MTR)</option>
+            <option value="OverTheShoulder">🗣️ Over The Shoulder (Trade)</option>
+            <option value="FollowActor">🎥 Follow Hero Smooth</option>
+            <option value="LowAngleHero">⚡ Hero Low Angle</option>
+            <option value="CloseUpFace">😱 Close-up Face</option>
+            <option value="Orbit">🔄 360° Drone Orbit</option>
+            <option value="WideReveal">🌄 Wide World Reveal</option>
+            <option value="TopDownIsometric">🗺️ Top-down Isometric</option>
+          </select>
+        </div>
 
-          <div>
-            <label className="text-[10px] text-slate-400 block mb-0.5">Placement</label>
-            <select
-              value={scene.caption?.positionY || 'bottom'}
-              onChange={(e) =>
-                onUpdateScene({
-                  ...scene,
-                  caption: {
-                    text: scene.caption?.text || '',
-                    style: scene.caption?.style || 'viral_yellow',
-                    positionY: e.target.value as any,
-                  },
-                })
-              }
-              className="w-full bg-[#1b2131] border border-[#2d374d] text-slate-200 text-[11px] rounded px-2 py-1 focus:outline-none focus:border-emerald-500"
-            >
-              <option value="bottom">Bottom Safe Zone</option>
-              <option value="middle">Center Attention</option>
-              <option value="top">Top Header</option>
-            </select>
-          </div>
+        <div className="flex items-center justify-between pt-1 border-t border-[#222a3a]">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={Boolean(scene.cameraShake)}
+              onChange={(e) => onUpdateScene({ ...scene, cameraShake: e.target.checked })}
+              className="rounded bg-[#1b2131] border-[#2d374d] text-amber-500 focus:ring-0"
+            />
+            <span className="text-[11px] text-slate-300 font-medium">💥 Camera Shake on Impact</span>
+          </label>
         </div>
       </div>
 

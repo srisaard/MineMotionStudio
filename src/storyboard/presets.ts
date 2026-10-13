@@ -46,7 +46,7 @@ export const STORY_TEMPLATES: Record<string, StoryboardProject> = {
         id: 'cost_2',
         title: 'Where Is Buddy?',
         duration: 2.2,
-        cameraPreset: 'CloseUpFace',
+        cameraPreset: 'ThirdPersonFront',
         actors: [
           {
             id: 'steve',
@@ -105,7 +105,7 @@ export const STORY_TEMPLATES: Record<string, StoryboardProject> = {
         id: 'v_1',
         title: 'Approaching Villager',
         duration: 2.2,
-        cameraPreset: 'FollowActor',
+        cameraPreset: 'OverTheShoulder',
         actors: [
           {
             id: 'steve',
@@ -140,7 +140,7 @@ export const STORY_TEMPLATES: Record<string, StoryboardProject> = {
         id: 'v_2',
         title: 'Absurd Trade Offer',
         duration: 2.5,
-        cameraPreset: 'CloseUpFace',
+        cameraPreset: 'FirstPersonPOV',
         challengeHud: {
           tradePopup: {
             giveItem: '64x 🟢 Emeralds',
@@ -181,7 +181,7 @@ export const STORY_TEMPLATES: Record<string, StoryboardProject> = {
         id: 'v_3',
         title: 'Villager Runs For His Life',
         duration: 2.8,
-        cameraPreset: 'Orbit',
+        cameraPreset: 'SideTracking',
         actors: [
           {
             id: 'villager',
@@ -224,7 +224,7 @@ export const STORY_TEMPLATES: Record<string, StoryboardProject> = {
         id: 'dig_1',
         title: 'เริ่มการขุด (First Dig)',
         duration: 2.2,
-        cameraPreset: 'FollowActor',
+        cameraPreset: 'FirstPersonPOV',
         challengeHud: {
           bannerText: '⛏️ ขุด 1,000,000 ครั้ง! / DIG 1,000,000 TIMES!',
           counter: {
@@ -259,7 +259,7 @@ export const STORY_TEMPLATES: Record<string, StoryboardProject> = {
         id: 'dig_2',
         title: 'ความเร็วแสง 999,999 ครั้ง (Frenzy)',
         duration: 2.4,
-        cameraPreset: 'CloseUpFace',
+        cameraPreset: 'ThirdPersonFront',
         challengeHud: {
           counter: {
             current: 999999,
@@ -335,7 +335,7 @@ export const STORY_TEMPLATES: Record<string, StoryboardProject> = {
         id: 'red_1',
         title: 'กับดักเส้นสีแดงมรณะ (The Red Line)',
         duration: 2.2,
-        cameraPreset: 'WideReveal',
+        cameraPreset: 'FirstPersonPOV',
         hasRedLine: true,
         challengeHud: {
           bannerText: '⚠️ ห้ามโดนเส้นสีแดง! / DO NOT TOUCH RED LINE! ⚠️',
@@ -364,7 +364,7 @@ export const STORY_TEMPLATES: Record<string, StoryboardProject> = {
         id: 'red_2',
         title: 'กระโดดข้ามเลเซอร์ (Parkour Leap)',
         duration: 2.5,
-        cameraPreset: 'LowAngleHero',
+        cameraPreset: 'SideTracking',
         hasRedLine: true,
         challengeHud: {
           bannerText: '⚠️ ห้ามโดนเส้นสีแดง! / JUMP NOW! ⚠️',
@@ -393,7 +393,7 @@ export const STORY_TEMPLATES: Record<string, StoryboardProject> = {
         id: 'red_3',
         title: 'รอดชีวิตสุดคลัตช์ (Clutch Survival)',
         duration: 2.8,
-        cameraPreset: 'Orbit',
+        cameraPreset: 'ThirdPersonFront',
         hasRedLine: true,
         actors: [
           {

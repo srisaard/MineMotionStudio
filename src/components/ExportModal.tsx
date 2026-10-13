@@ -27,6 +27,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   const [fps, setFps] = useState<30 | 60>(60);
   const [format, setFormat] = useState<'mp4' | 'webm'>('mp4');
   const [includeCaptions, setIncludeCaptions] = useState(true);
+  const [includeGameHud, setIncludeGameHud] = useState(true);
   const [includeAudio, setIncludeAudio] = useState(true);
 
   const [isExporting, setIsExporting] = useState(false);
@@ -50,6 +51,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       fps,
       format,
       includeCaptions,
+      includeGameHud,
       includeAudio,
       showSafeZonesDuringPreview: false,
     };
@@ -289,6 +291,16 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                   className="rounded bg-[#1b2230] border-[#303c54] text-emerald-500 focus:ring-0"
                 />
                 <span className="text-slate-300 font-medium">Bake viral animated captions into video</span>
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={includeGameHud}
+                  onChange={(e) => setIncludeGameHud(e.target.checked)}
+                  className="rounded bg-[#1b2230] border-[#303c54] text-emerald-500 focus:ring-0"
+                />
+                <span className="text-slate-300 font-medium">Bake Minecraft Game HUD (Crosshair, Hearts, Hotbar)</span>
               </label>
 
               <label className="flex items-center gap-2 cursor-pointer">

@@ -380,6 +380,58 @@ export class SoundFX {
           const t = i / sampleRate;
           data[startSample + i] += Math.sin(t * 1100 * 2 * Math.PI) * (1 - i / len) * 0.3;
         }
+      } else if (cue.type === 'villager_hrm') {
+        const len = Math.min(totalSamples - startSample, Math.floor(sampleRate * 0.4));
+        for (let i = 0; i < len; i++) {
+          const t = i / sampleRate;
+          const tone = (Math.sin(t * 140 * 2 * Math.PI) + 0.5 * Math.sin(t * 280 * 2 * Math.PI)) * Math.exp(-t * 3.5);
+          data[startSample + i] += tone * 0.35;
+        }
+      } else if (cue.type === 'villager_trade') {
+        const len = Math.min(totalSamples - startSample, Math.floor(sampleRate * 0.35));
+        for (let i = 0; i < len; i++) {
+          const t = i / sampleRate;
+          const freq = t < 0.1 ? 523.25 : t < 0.2 ? 659.25 : 783.99;
+          data[startSample + i] += Math.sin(t * freq * 2 * Math.PI) * (1 - i / len) * 0.25;
+        }
+      } else if (cue.type === 'laser_buzz') {
+        const len = Math.min(totalSamples - startSample, Math.floor(sampleRate * 0.3));
+        for (let i = 0; i < len; i++) {
+          const t = i / sampleRate;
+          const buzz = (2 * ((t * 88) % 1) - 1) * Math.exp(-t * 2);
+          data[startSample + i] += buzz * 0.3;
+        }
+      } else if (cue.type === 'sad_piano') {
+        const len = Math.min(totalSamples - startSample, Math.floor(sampleRate * 1.5));
+        for (let i = 0; i < len; i++) {
+          const t = i / sampleRate;
+          const note1 = Math.sin(t * 220 * 2 * Math.PI) * Math.exp(-t * 1.2);
+          const note2 = Math.sin(t * 261.63 * 2 * Math.PI) * Math.exp(-t * 1.2);
+          const note3 = Math.sin(t * 329.63 * 2 * Math.PI) * Math.exp(-t * 1.2);
+          data[startSample + i] += (note1 + note2 + note3) * 0.12;
+        }
+      } else if (cue.type === 'block_break') {
+        const len = Math.min(totalSamples - startSample, Math.floor(sampleRate * 0.15));
+        for (let i = 0; i < len; i++) {
+          const t = i / sampleRate;
+          const noise = (Math.random() * 2 - 1) * Math.exp(-t * 18);
+          const thud = Math.sin(t * 120 * 2 * Math.PI) * Math.exp(-t * 12);
+          data[startSample + i] += (noise * 0.3 + thud * 0.3);
+        }
+      } else if (cue.type === 'fail_buzzer') {
+        const len = Math.min(totalSamples - startSample, Math.floor(sampleRate * 0.45));
+        for (let i = 0; i < len; i++) {
+          const t = i / sampleRate;
+          const saw1 = 2 * ((t * 92) % 1) - 1;
+          const saw2 = 2 * ((t * 98) % 1) - 1;
+          data[startSample + i] += (saw1 + saw2) * 0.15 * (1 - i / len);
+        }
+      } else if (cue.type === 'footstep') {
+        const len = Math.min(totalSamples - startSample, Math.floor(sampleRate * 0.08));
+        for (let i = 0; i < len; i++) {
+          const t = i / sampleRate;
+          data[startSample + i] += (Math.random() * 2 - 1) * Math.exp(-t * 40) * 0.2;
+        }
       }
     }
 

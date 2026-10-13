@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import type { CameraPreset } from '../storyboard/types';
 
-
 export class CameraDirector {
   public camera: THREE.PerspectiveCamera;
   private currentPreset: CameraPreset = 'FollowActor';
@@ -10,14 +9,18 @@ export class CameraDirector {
   private shakeTime: number = 0;
 
   constructor(aspect = 9 / 16) {
-    // 55 degree vertical FOV for mobile vertical framing
-    this.camera = new THREE.PerspectiveCamera(55, aspect, 0.1, 100);
+    // 60 degree vertical FOV for authentic Minecraft view
+    this.camera = new THREE.PerspectiveCamera(60, aspect, 0.05, 100);
     this.camera.position.set(0, 2.0, 4.0);
     this.camera.lookAt(0, 1.0, 0);
   }
 
   public setPreset(preset: CameraPreset) {
     this.currentPreset = preset;
+  }
+
+  public getPreset(): CameraPreset {
+    return this.currentPreset;
   }
 
   public triggerShake(intensity = 0.4) {
@@ -27,17 +30,79 @@ export class CameraDirector {
   public update(
     time: number,
     actorPos: THREE.Vector3 = new THREE.Vector3(0, 0, 0),
+    actorRotY: number = 0,
     isFreeOrbit = false
   ) {
     if (isFreeOrbit) {
-      return; // Handled by OrbitControls if enabled
+      return;
     }
 
     const targetLookAt = actorPos.clone().add(new THREE.Vector3(0, 1.1, 0));
 
     switch (this.currentPreset) {
+      case 'FirstPersonPOV': {
+        // Authentic Minecraft First-Person view (Eye height = 1.62)
+        // Add subtle view-bobbing (like in real Minecraft game settings)
+        const bob = Math.sin(time * 10) * 0.035;
+        const eyePos = actorPos.clone().add(new THREE.Vector3(0, 1.62 + bob, 0));
+        this.camera.position.copy(eyePos);
+
+        // Look forward in the direction actor is facing, slightly downward toward crosshair
+        const forwardX = Math.sin(actorRotY);
+        const forwardZ = Math.cos(actorRotY);
+        const lookTarget = eyePos.clone().add(new THREE.Vector3(forwardX * 4, -0.4, forwardZ * 4));
+        this.camera.lookAt(lookTarget);
+        break;
+      }
+
+      case 'ThirdPersonBack': {
+        // Authentic Minecraft F5 rear camera
+        const forwardX = Math.sin(actorRotY);
+        const forwardZ = Math.cos(actorRotY);
+        const idealCamPos = actorPos.clone().add(
+          new THREE.Vector3(-forwardX * 3.2, 1.85, -forwardZ * 3.2)
+        );
+        this.camera.position.lerp(idealCamPos, 0.15);
+        const lookTarget = actorPos.clone().add(new THREE.Vector3(forwardX * 3, 1.3, forwardZ * 3));
+        this.targetPosition.lerp(lookTarget, 0.18);
+        this.camera.lookAt(this.targetPosition);
+        break;
+      }
+
+      case 'ThirdPersonFront': {
+        // Reverse F5 selfie / reaction face view (Cash & MTR reaction shots)
+        const forwardX = Math.sin(actorRotY);
+        const forwardZ = Math.cos(actorRotY);
+        const idealCamPos = actorPos.clone().add(
+          new THREE.Vector3(forwardX * 2.5, 1.6, forwardZ * 2.5)
+        );
+        this.camera.position.lerp(idealCamPos, 0.18);
+        const lookTarget = actorPos.clone().add(new THREE.Vector3(0, 1.45, 0));
+        this.targetPosition.lerp(lookTarget, 0.2);
+        this.camera.lookAt(this.targetPosition);
+        break;
+      }
+
+      case 'SideTracking': {
+        // Side-view tracking angle (MTR red line parkour jump / JahCub chase)
+        const idealCamPos = new THREE.Vector3(actorPos.x + 4.2, actorPos.y + 1.3, actorPos.z);
+        this.camera.position.lerp(idealCamPos, 0.15);
+        this.targetPosition.lerp(actorPos.clone().add(new THREE.Vector3(0, 1.0, 0)), 0.18);
+        this.camera.lookAt(this.targetPosition);
+        break;
+      }
+
+      case 'OverTheShoulder': {
+        // Over right shoulder dialogue angle (trading with Villager)
+        const idealCamPos = actorPos.clone().add(new THREE.Vector3(0.55, 1.5, 1.8));
+        this.camera.position.lerp(idealCamPos, 0.14);
+        this.targetPosition.lerp(actorPos.clone().add(new THREE.Vector3(-0.2, 1.3, -2.5)), 0.16);
+        this.camera.lookAt(this.targetPosition);
+        break;
+      }
+
       case 'FollowActor': {
-        // Over the shoulder / chase camera
+        // Smooth over-the-shoulder chase
         const idealCamPos = actorPos.clone().add(new THREE.Vector3(0, 1.4, 3.4));
         this.camera.position.lerp(idealCamPos, 0.12);
         this.targetPosition.lerp(targetLookAt, 0.15);
@@ -105,7 +170,7 @@ export class CameraDirector {
       const shakeY = (Math.cos(this.shakeTime * 53) + Math.sin(this.shakeTime * 79)) * 0.5 * this.cameraShakeIntensity;
       this.camera.position.x += shakeX;
       this.camera.position.y += shakeY;
-      this.cameraShakeIntensity *= 0.90; // Dampen
+      this.cameraShakeIntensity *= 0.90;
     } else {
       this.cameraShakeIntensity = 0;
     }

@@ -254,6 +254,11 @@ export class ScriptParser {
 
   private static matchCameraPreset(str: string): CameraPreset {
     const s = str.toLowerCase();
+    if (s.includes('first') || s.includes('1st') || s.includes('pov')) return 'FirstPersonPOV';
+    if (s.includes('back') || s.includes('behind') || s.includes('rear') || (s.includes('f5') && !s.includes('front') && !s.includes('selfie'))) return 'ThirdPersonBack';
+    if (s.includes('front') || s.includes('selfie') || s.includes('reverse f5')) return 'ThirdPersonFront';
+    if (s.includes('side') || s.includes('tracking') || s.includes('profile')) return 'SideTracking';
+    if (s.includes('shoulder')) return 'OverTheShoulder';
     if (s.includes('low') || s.includes('hero')) return 'LowAngleHero';
     if (s.includes('close') || s.includes('face')) return 'CloseUpFace';
     if (s.includes('orbit')) return 'Orbit';

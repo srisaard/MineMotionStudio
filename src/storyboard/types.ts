@@ -31,12 +31,17 @@ export type AnimationType =
   | 'shocked';
 
 export type CameraPreset = 
-  | 'FollowActor'
-  | 'LowAngleHero'
-  | 'CloseUpFace'
-  | 'Orbit'
-  | 'WideReveal'
-  | 'TopDownIsometric'
+  | 'FirstPersonPOV'    // Authentic Minecraft 1st Person view (F5 1st person)
+  | 'ThirdPersonBack'   // Classic Minecraft F5 behind-the-head view
+  | 'ThirdPersonFront'  // Reverse F5 selfie / reaction face view
+  | 'SideTracking'      // 2D side profile tracking jump/chase (MTR & JahCub style)
+  | 'OverTheShoulder'   // Dialogue over shoulder
+  | 'LowAngleHero'      // Dramatic upward hero angle
+  | 'CloseUpFace'       // Tight face portrait
+  | 'FollowActor'       // Smooth tracking chase
+  | 'Orbit'             // 360 degree drone sweep
+  | 'WideReveal'        // Establishing wide scenery
+  | 'TopDownIsometric'  // Tactical top view
   | 'FreeOrbit';
 
 export type CaptionStyle = 'viral_yellow' | 'minecraft_pixel' | 'neon_punch' | 'clean_white';
@@ -75,16 +80,23 @@ export interface SoundCue {
 }
 
 export interface ChallengeHudConfig {
-  bannerText?: string; // e.g. "⚠️ ห้ามโดนเส้นสีแดง! / DO NOT TOUCH RED LINE"
+  bannerText?: string;
   counter?: {
     current: number;
     max: number;
-    label: string; // e.g. "DIGS" or "ขุด"
+    label: string;
   };
   tradePopup?: {
-    giveItem: string; // e.g. "64x Emeralds"
-    receiveItem: string; // e.g. "1x Dirt Block"
+    giveItem: string;
+    receiveItem: string;
   };
+}
+
+export interface CaptionConfig {
+  text: string;
+  style: CaptionStyle;
+  positionY?: 'top' | 'middle' | 'bottom';
+  enabled?: boolean;
 }
 
 export interface StoryboardScene {
@@ -96,11 +108,7 @@ export interface StoryboardScene {
   hasRedLine?: boolean; // Renders the glowing dangerous Red Line
   targetActorId?: string;
   actors: ActorState[];
-  caption?: {
-    text: string;
-    style: CaptionStyle;
-    positionY?: 'top' | 'middle' | 'bottom';
-  };
+  caption?: CaptionConfig;
   challengeHud?: ChallengeHudConfig;
   sounds: SoundCue[];
 }
@@ -109,6 +117,8 @@ export interface StoryboardProject {
   title: string;
   author?: string;
   aspectRatio: '9:16';
+  globalCaptionsEnabled?: boolean;
+  gameHudEnabled?: boolean;
   scenes: StoryboardScene[];
 }
 
@@ -117,6 +127,7 @@ export interface ExportSettings {
   fps: 30 | 60;
   format: 'mp4' | 'webm';
   includeCaptions: boolean;
+  includeGameHud: boolean;
   includeAudio: boolean;
   showSafeZonesDuringPreview: boolean;
 }
