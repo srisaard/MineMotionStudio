@@ -11,8 +11,7 @@ import { STORY_TEMPLATES } from './storyboard/presets';
 export function App() {
   // Current active project
   const [project, setProject] = useState<StoryboardProject>(
-    STORY_TEMPLATES.at_what_cost
-
+    STORY_TEMPLATES.emerald_heist
   );
 
   // Studio playback & navigation state

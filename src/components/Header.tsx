@@ -67,10 +67,11 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center gap-1.5">
           <span className="text-xs text-slate-400 hidden lg:inline">Templates:</span>
           <select
-            defaultValue="at_what_cost"
+            defaultValue="emerald_heist"
             onChange={(e) => onSelectTemplate(e.target.value)}
             className="bg-[#1a1f2c] border border-[#2e374d] text-slate-200 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-emerald-500 hover:bg-[#202738] cursor-pointer"
           >
+            <option value="emerald_heist">💎 The Emerald Heist (Player Stole Item, 20s)</option>
             <option value="at_what_cost">💔 You Won, But at What Cost? (Cash)</option>
             <option value="villagers_crazy">🧙‍♂️ Minecraft Villagers are CRAZY (JahCub)</option>
             <option value="dig_million_times">⛏️ ขุด 1,000,000 ครั้ง (MTR Mysterios)</option>
